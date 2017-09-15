@@ -46,6 +46,24 @@ TestMessage.prototype.unpacked1987 = function() {
     ];
 };
 
+TestMessage.prototype.packedPrivateData = function() {
+    return [
+        "08", "00", "20", "20", "01", "00", "00", "C1", "00", "00", "99", "00", "00", "14", "09", "84", "00", "19", "30", "30", "30", "30", "30", "30", "32", "33", "30", "30", "30", "30", "30", "30", "30", "30", "30", "30", "35", "32", "32", "34", "38", "00", "91", "54", "01", "08", "02", "02", "30", "30", "30", "30", "30", "30", "32", "33", "88", "31", "36", "49", "4D", "50", "39", "30", "34", "30", "30", "30", "33", "41", "20", "30", "30", "30", "30", "92", "00", "34", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "31", "36", "33", "32", "38", "36", "39", "33", "33", "30", "35", "31", "30", "33", "35", "30", "30", "35", "30", "32", "36", "32", "39", "31", "93", "00", "19", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "58"
+    ];
+};
+
+TestMessage.prototype.unpackedPrivateData = function() {
+    return [
+        [0, '0800'],
+        [3, '990000'],
+        [11, '140984'],
+        [24, '019'],
+        [41, '00000023'],
+        [42, '000000000052248'],
+        [48, new Buffer('54010802023030303030303233883136494D50393034303030334120303030309200342020202020202020202031363332383639333330353130333530303530323632393193001920202020202020202020202020202020202058', 'hex')]
+    ];
+};
+
 var testMessage = new TestMessage();
 
 describe('native extension', function() {
@@ -127,5 +145,25 @@ describe('parse and unpack iso8583 1987 message', function() {
         var unpackedMessage = message.parseSync(msg);
 
         assert.deepEqual(unpackedMessage, testMessage.unpacked1987());
+    });
+});
+
+describe('parse message with private data in bit 48 containing invalid chars', function() {
+    it('should parse a message and return an Array of values', function() {
+        var msg = testMessage.packedPrivateData().join("");
+        var message = new ISO8583.Message();
+        var unpackedMessage = message.parseSync(msg);
+
+        assert.deepEqual(unpackedMessage, testMessage.unpackedPrivateData());
+    });
+});
+
+describe('parse and unpack message with private data in bit 48 containing invalid chars', function() {
+    it('should parse and unpack a message and return an Array of HEX values', function() {
+        var msg = testMessage.unpackedPrivateData();
+        var message = new ISO8583.Message();
+        var packedMessage = message.packSync(msg);
+
+        assert.deepEqual(packedMessage.join(" "), testMessage.packedPrivateData().join(" "));
     });
 });

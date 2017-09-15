@@ -9,7 +9,11 @@ NativeExtension.Message.prototype.parseSync = function(data) {
 	for (var i = 0; i < unpackedMessage.length; i++) {
 		var u = unpackedMessage[i];
 		if (u){
-			result.push([parseInt(u.key, 10), u.value.trim()]);
+			if (typeof(u.value.trim) === "function") {
+				result.push([parseInt(u.key, 10), u.value.trim()]);
+			} else {
+				result.push([parseInt(u.key, 10), u.value]);
+			}
 		}
 	}
 

@@ -107,17 +107,23 @@ v8::Local<v8::Array> DL_ISO8583_MSG_Fetch (const DL_ISO8583_HANDLER *iHandler, c
 			if ( NULL != fieldDef ) /* present */
 			{
 				std::string k = std::to_string(i);
-
-				// convert to std::string
-				std::string v = "";
-				const char *buf1 = "";
-				std::string str(buf1);
-				str = (const char *)iMsg->field[i].ptr; // Calls str.operator=(const char *)
-
+				
 				const v8::Local<v8::Object> item = Nan::New<v8::Object>();
+				if (i != 48) {
+					// convert to std::string
+					std::string v = "";
+					const char *buf1 = "";
+					std::string str(buf1);
+						
+					str = (char *)iMsg->field[i].ptr; // Calls str.operator=(const char *)
+									
+					Nan::Set(item, Nan::New("value").ToLocalChecked(), Nan::New(str).ToLocalChecked());
+				}
+				else {
+					Nan::Set(item, Nan::New("value").ToLocalChecked(), Nan::NewBuffer((char *)iMsg->field[i].ptr, (uint32_t) iMsg->field[i].len).ToLocalChecked());
+				}
 				Nan::Set(item, Nan::New("key").ToLocalChecked(), Nan::New(k).ToLocalChecked());
-				Nan::Set(item, Nan::New("value").ToLocalChecked(), Nan::New(str).ToLocalChecked());
-
+				
 				Nan::Set(result, i, item );
 			}
 
