@@ -51,16 +51,34 @@ v8::Local<v8::Array> pack_iso8583(v8::Handle<v8::Array> messageFields){
         v8::Handle<v8::Array> messageField = v8::Handle<v8::Array>::Cast(messageFields->Get(i));
 
         DL_UINT16 messageFieldPosition = (DL_UINT16)messageField->Get(0)->Uint32Value();
+		
+		DL_UINT8 *c;
+		
+		if (messageFieldPosition != 48) {
+			// convert it to C string
+			v8::String::Utf8Value _messageFieldValue(messageField->Get(1)->ToString());
+			std::string messageFieldValue = std::string(*_messageFieldValue);
+			c = (DL_UINT8 *)messageFieldValue.c_str();
+			
+			//(DL_UINT16 iField, const DL_UINT8 *iDataStr)
+			(void)DL_ISO8583_MSG_SetField_Str(messageFieldPosition, c, &isoMsg);
 
-        // convert it to C string
-        v8::String::Utf8Value _messageFieldValue(messageField->Get(1)->ToString());
-        std::string messageFieldValue = std::string(*_messageFieldValue);
-        const char * c = messageFieldValue.c_str();
+			if (i == 0 && c[0] != '1') {
+				is1987 = 1;
+			}
+		} 
+		else {
+			v8::Local<v8::Object> obj = messageField->Get(1)->ToObject();
+			c = (DL_UINT8 *)node::Buffer::Data(obj);
+			size_t len = node::Buffer::Length(obj);
+			
+			(void)DL_ISO8583_MSG_SetField_Bin(messageFieldPosition, c, len, &isoMsg);
 
-        if (i == 0 && c[0] != '1') is1987 = 1;
+			if (i == 0 && c[0] != '1') {
+				is1987 = 1;
+			}
+		}
 
-        //(DL_UINT16 iField, const DL_UINT8 *iDataStr)
-        (void)DL_ISO8583_MSG_SetField_Str( messageFieldPosition, (DL_UINT8 *)c, &isoMsg);
     }
 
     if (is1987 == 1) {
