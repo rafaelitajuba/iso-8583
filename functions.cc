@@ -138,7 +138,7 @@ v8::Local<v8::Array> DL_ISO8583_MSG_Fetch (const DL_ISO8583_HANDLER *iHandler, c
 					Nan::Set(item, Nan::New("value").ToLocalChecked(), Nan::New(str).ToLocalChecked());
 				}
 				else {
-					Nan::Set(item, Nan::New("value").ToLocalChecked(), Nan::NewBuffer((char *)iMsg->field[i].ptr, (uint32_t) iMsg->field[i].len).ToLocalChecked());
+					Nan::Set(item, Nan::New("value").ToLocalChecked(), Nan::CopyBuffer((char *)iMsg->field[i].ptr, (uint32_t) iMsg->field[i].len).ToLocalChecked());
 				}
 				Nan::Set(item, Nan::New("key").ToLocalChecked(), Nan::New(k).ToLocalChecked());
 				
